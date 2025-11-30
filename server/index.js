@@ -46,6 +46,64 @@ app.use((req, _res, next) => {
   next();
 });
 
+// Gemini API endpoint
+app.post('/api/generate-content', async (req, res) => {
+  try {
+    const { content } = req.body;
+    
+    if (!content) {
+      return res.status(400).json({ error: 'Content is required' });
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      console.error('GEMINI_API_KEY is not set');
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+
+    console.log('Sending request to Gemini API...');
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: content }]
+          }]
+        })
+      }
+    );
+
+    const responseText = await response.text();
+    let data;
+    try {
+      data = responseText ? JSON.parse(responseText) : {};
+    } catch (e) {
+      console.error('Failed to parse Gemini API response:', e);
+      return res.status(500).json({ 
+        error: 'Invalid response from Gemini API',
+        details: responseText
+      });
+    }
+
+    if (!response.ok) {
+      console.error('Gemini API error:', data);
+      return res.status(response.status).json({ 
+        error: 'Error from Gemini API',
+        details: data
+      });
+    }
+
+    console.log('Successfully got response from Gemini API');
+    res.json(data);
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true });
 });
