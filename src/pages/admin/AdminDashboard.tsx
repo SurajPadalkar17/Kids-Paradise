@@ -35,7 +35,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 type Activity = { when: string; user: string; action: string; details: string; status: string };
 
 const AdminDashboard = () => {
-  const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4001";
+  const API_BASE = import.meta.env.VITE_API_BASE || "https://kids-paradise-liart.vercel.app";
+  console.log('Using API base URL:', API_BASE); // For debugging
   const [openAdd, setOpenAdd] = useState(false);
   const [openIssue, setOpenIssue] = useState(false);
   const [openCollect, setOpenCollect] = useState(false);
