@@ -62,7 +62,17 @@ app.use(cors(corsOptions));
 
 // Serve static files from the client's dist directory
 const clientDistPath = path.join(__dirname, '../client/dist');
-app.use(express.static(clientDistPath));
+
+// Check if the dist directory exists
+const distExists = require('fs').existsSync(clientDistPath);
+
+if (distExists) {
+  console.log(`Serving static files from: ${clientDistPath}`);
+  app.use(express.static(clientDistPath));
+} else {
+  console.warn(`WARNING: Client dist directory not found at: ${clientDistPath}`);
+  console.warn('Make sure to build the client before starting the server');
+}
 
 // Handle API routes here
 app.use('/api', (req, res, next) => {
@@ -72,7 +82,11 @@ app.use('/api', (req, res, next) => {
 
 // For all other routes, serve the client's index.html
 app.get('*', (req, res) => {
-  res.sendFile(path.join(clientDistPath, 'index.html'));
+  if (distExists) {
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  } else {
+    res.status(500).send('Client files not found. Please build the client first.');
+  }
 });
 
 
