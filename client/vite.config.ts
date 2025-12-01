@@ -1,0 +1,48 @@
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import tsconfigPaths from 'vite-tsconfig-paths';
+
+export default defineConfig({
+  base: '/',
+  define: {
+    'process.env': {}
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: process.env.NODE_ENV !== 'production',
+    emptyOutDir: true,
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          vendor: ['@supabase/supabase-js', 'lucide-react'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu']
+        },
+      },
+    },
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+  server: {
+    port: 3000,
+    open: true,
+    strictPort: true,
+    proxy: {
+      '/api': {
+        target: process.env.VITE_API_BASE || 'http://localhost:4001',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  },
+  preview: {
+    port: 3000,
+    strictPort: true
+  }
+});
