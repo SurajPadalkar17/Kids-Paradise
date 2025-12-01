@@ -5,6 +5,7 @@ import express from 'express';
 import cors from 'cors';
 import { createClient } from '@supabase/supabase-js';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import { existsSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -64,7 +65,7 @@ app.use(cors(corsOptions));
 const clientDistPath = path.join(__dirname, '../client/dist');
 
 // Check if the dist directory exists
-const distExists = require('fs').existsSync(clientDistPath);
+const distExists = existsSync(clientDistPath);
 
 if (distExists) {
   console.log(`Serving static files from: ${clientDistPath}`);
