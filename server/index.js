@@ -60,14 +60,21 @@ const corsOptions = {
 // Apply CORS to all routes
 app.use(cors(corsOptions));
 
-// Serve static files from the Vite build directory
-const staticPath = path.join(process.cwd(), 'dist');
-app.use(express.static(staticPath, { index: false }));
+// Serve static files from the client's dist directory
+const clientDistPath = path.join(__dirname, '../client/dist');
+app.use(express.static(clientDistPath));
 
-// Handle client-side routing - return the main index.html for all other routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(staticPath, 'index.html'));
+// Handle API routes here
+app.use('/api', (req, res, next) => {
+  // Your API routes will go here
+  next();
 });
+
+// For all other routes, serve the client's index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(clientDistPath, 'index.html'));
+});
+
 
 // Handle preflight requests
 app.options('*', cors(corsOptions));
@@ -203,8 +210,15 @@ app.post('/api/students', async (req, res) => {
 if (process.env.VERCEL) {
   module.exports = app;
 } else {
-  app.listen(PORT, () => {
-    console.log(`Server running locally on http://localhost:${PORT}`);
+  // Start the server
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Serving static files from: ${clientDistPath}`);
+  });
+
+  // Handle server errors
+  server.on('error', (error) => {
+    console.error('Server error:', error);
   });
 }
 
