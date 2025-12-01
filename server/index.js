@@ -25,21 +25,54 @@ const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-const RAW_CORS = process.env.CORS_ORIGIN || 'http://localhost:5173';
-const ALLOWED_ORIGINS = RAW_CORS.split(',').map((s) => s.trim()).filter(Boolean);
+// CORS configuration
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'https://kids-paradise-liart.vercel.app',
+  'https://kidlit-library-quest.vercel.app'
+];
+
+// Add any custom origins from environment variable
+if (process.env.CORS_ORIGIN) {
+  allowedOrigins.push(...process.env.CORS_ORIGIN.split(',').map(s => s.trim()));
+}
+
 const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // allow non-browser requests
-    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
-    // allow common localhost dev ports
-    const isLocalhost = /^http:\/\/localhost:(\d+)$/.test(origin) || /^http:\/\/127\.0\.0\.1:(\d+)$/.test(origin);
-    if (isLocalhost) return callback(null, true);
-    return callback(new Error('Not allowed by CORS'));
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if the origin is in the allowed list
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = `CORS policy: ${origin} not allowed`;
+      console.error(msg);
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
   },
-  credentials: false,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 };
+
+// Apply CORS to all routes
 app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
 app.use(express.json());
+// Serve static files from Vite build directory in production
+if (process.env.NODE_ENV === 'production') {
+  const clientBuildPath = path.resolve(__dirname, '../dist');
+  app.use(express.static(clientBuildPath));
+  
+  // Handle SPA client-side routing - serve index.html for all other routes
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
+  });
+}
+
 // Basic request logger
 app.use((req, _res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
