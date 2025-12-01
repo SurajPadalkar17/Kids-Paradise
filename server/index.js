@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import { createClient } from '@supabase/supabase-js';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -58,6 +59,15 @@ const corsOptions = {
 
 // Apply CORS to all routes
 app.use(cors(corsOptions));
+
+// Serve static files from the Vite build directory
+const staticPath = path.join(process.cwd(), 'dist');
+app.use(express.static(staticPath, { index: false }));
+
+// Handle client-side routing - return the main index.html for all other routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(staticPath, 'index.html'));
+});
 
 // Handle preflight requests
 app.options('*', cors(corsOptions));
