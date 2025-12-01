@@ -222,10 +222,8 @@ app.post('/api/students', async (req, res) => {
   }
 });
 
-if (process.env.VERCEL) {
-  module.exports = app;
-} else {
-  // Start the server
+// Start the server if not in Vercel environment
+if (!process.env.VERCEL) {
   const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Serving static files from: ${clientDistPath}`);
@@ -236,6 +234,8 @@ if (process.env.VERCEL) {
     console.error('Server error:', error);
   });
 }
+
+export default app;
 
 // Log unexpected exits to diagnose auto-closing
 process.on('unhandledRejection', (reason) => {
