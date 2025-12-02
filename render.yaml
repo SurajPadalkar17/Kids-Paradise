@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: kidlit-backend
+    env: node
+    buildCommand: ./render-build.sh
+    startCommand: node server/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # Add other environment variables here (e.g., SUPABASE_URL, SUPABASE_KEY, etc.)

@@ -1,0 +1,22 @@
+{
+  "name": "kidlit-library-quest",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "build": "cd client && npm install && npm run build && cd ../server && npm install",
+    "start": "cd server && npm start",
+    "dev": "concurrently \"cd client && npm run dev\" \"cd server && npm run dev\"",
+    "lint": "eslint ."
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "eslint": "^8.0.0"
+  }
+}
